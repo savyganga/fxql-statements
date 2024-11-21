@@ -1,0 +1,60 @@
+# version: "3.8"
+
+# services:
+#   fxql:
+#     build:
+#       context: .
+#       dockerfile: Dockerfile
+#     ports:
+#       - "3000:3000"
+#     env_file:
+#       - .env
+#     volumes:
+#       - .:/usr/src/app
+#       - /usr/src/app/node_modules:/usr/src/app/node_modules
+#     command: npm run start:dev
+
+version: '3.8'
+
+services:
+  db:
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    container_name: postgres
+    volumes:
+      - ./pgdata-1:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+
+  fxql:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mira-fxql
+    env_file:
+      - .env
+    ports:
+      - '3000:3000'
+    depends_on:
+      - db
+    volumes:
+      - ./src:/app/src
+
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    container_name: nest-pgadmin4
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
+    ports:
+      - '5050:80'
+    depends_on:
+      - db
+
+volumes:
+  pgdata-1:
